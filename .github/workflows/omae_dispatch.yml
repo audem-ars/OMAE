@@ -19,7 +19,6 @@ jobs:
         with: { python-version: '3.11' }
       - name: Install executor deps
         run: |
-          # cd executor (run from repo root)
           python -m pip install --upgrade pip
           pip install pyyaml
       - name: Run executor
@@ -31,7 +30,6 @@ jobs:
           OMAE_URL: ${{ github.event.inputs.url }}
           OMAE_PROMPT: ${{ github.event.inputs.prompt }}
         run: |
-          # cd executor (run from repo root)
           PYTHONPATH=executor python -m omae.cli -p playbooks/${{ github.event.inputs.pipeline }}.yaml
       - uses: actions/setup-node@v4
         with: { node-version: '20' }
