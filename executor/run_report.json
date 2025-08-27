@@ -1,0 +1,12 @@
+{
+  "log": [
+    "ECHO: Template -> Build -> QA -> Deploy",
+    "TEMPLATE NOT FOUND: landing_saas",
+    "index.html not found for SEO inject"
+  ],
+  "skipped_nodes": [
+    "scaffold",
+    "seo"
+  ],
+  "ts": 1756306223
+}
