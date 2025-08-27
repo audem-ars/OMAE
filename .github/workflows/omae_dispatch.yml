@@ -37,7 +37,7 @@ jobs:
         with: { node-version: '20' }
       - name: Build site (if present)
         run: |
-          if [ -f "site/package.json" ]; then cd site && npm ci && npm run build && cd ..; else echo "No site/ to build"; fi
+          if [ -f "site/package.json" ]; then cd site && npm install && npm run build && cd ..; else echo "No site/ to build"; fi
       - name: Prepare publish folders
         run: |
           mkdir -p apps/publish/current apps/publish/candidate apps/publish/releases

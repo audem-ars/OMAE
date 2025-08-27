@@ -16,7 +16,7 @@ jobs:
       - name: Build Studio
         run: |
           cd apps/studio
-          npm ci
+          npm install
           npm run build
       - name: Bundle published artifacts
         run: |
