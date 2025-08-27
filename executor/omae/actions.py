@@ -13,10 +13,21 @@ def ensure_vite_react(dest):
       "devDependencies":{"@vitejs/plugin-react":"^4.3.1","vite":"^5.3.4"}
     }
     os.makedirs(dest, exist_ok=True)
-    open(os.path.join(dest,"package.json"),"w",encoding="utf-8").write(json.dumps(pkg,indent=2))
-    open(os.path.join(dest,"vite.config.js"),"w",encoding="utf-8").write(
-      "import { defineConfig } from 'vite\nimport react from '@vitejs/plugin-react'\nexport default defineConfig({ base:'./', plugins:[react()], build:{ outDir:'dist' } })\n".replace('\n','\n')
-    )
+    pkg_path = os.path.join(dest, "package.json")
+    if not os.path.exists(pkg_path):
+        open(pkg_path, "w", encoding="utf-8").write(json.dumps(pkg, indent=2))
+    vcfg_path = os.path.join(dest, "vite.config.js")
+    if not os.path.exists(vcfg_path):
+        cfg = (
+            "import { defineConfig } from 'vite\n"
+            "import react from '@vitejs/plugin-react'\n"
+            "export default defineConfig({ base: './', plugins: [react()], build: { outDir: 'dist' } })\n"
+        ).replace("\n", "\n").replace(" '", " '")  # keep as plain text
+        open(vcfg_path, "w", encoding="utf-8").write(
+            "import { defineConfig } from 'vite'\n"
+            "import react from '@vitejs/plugin-react'\n"
+            "export default defineConfig({ base: './', plugins: [react()], build: { outDir: 'dist' } })\n"
+        )
 
 def scaffold_site_from_prompt(ctx, dest='./site', prompt='My App'):
     prompt = os.environ.get('OMAE_PROMPT', prompt)
