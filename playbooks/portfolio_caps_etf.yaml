@@ -1,0 +1,5 @@
+name: portfolio:caps_etf@v1
+steps:
+  - { id: plan, action: echo, inputs: { text: "Constrain weights: <=5% per asset, <=20% per sector" } }
+  - { id: build, pre:[plan], action: portfolio_build_caps, inputs: { tickers_file: "data/tickers.txt", sectors_file: "data/sectors.csv", max_weight: 0.05, max_sector: 0.20, out_csv: "portfolio-proposal.csv" } }
+  - { id: report, pre:[build], action: write_report, inputs: { out: "run_report.json" } }

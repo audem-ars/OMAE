@@ -1,0 +1,5 @@
+name: options:analyzer@v1
+steps:
+  - { id: plan, action: echo, inputs: { text: "Parse CSV options chain & compute simple metrics" } }
+  - { id: analyze, pre:[plan], action: options_analyze_stub, inputs: { csv_path: "data/options_sample.csv", out_html: "options-report.html" } }
+  - { id: report, pre:[analyze], action: write_report, inputs: { out: "run_report.json" } }

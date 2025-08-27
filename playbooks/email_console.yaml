@@ -1,0 +1,5 @@
+name: email:console@v1
+steps:
+  - { id: plan, action: echo, inputs: { text: "Log email (dev mode)" } }
+  - { id: send, pre:[plan], action: echo, inputs: { text: "Email queued (dev log only)" } }
+  - { id: report, pre:[send], action: write_report, inputs: { out: "run_report.json" } }

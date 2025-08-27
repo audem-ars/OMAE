@@ -1,0 +1,37 @@
+name: Build & Publish Studio (+ artifacts) to GitHub Pages
+on:
+  push:
+    branches: [ main ]
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - name: Build Studio
+        run: |
+          cd apps/studio
+          npm ci
+          npm run build
+      - name: Bundle published artifacts
+        run: |
+          mkdir -p apps/studio/dist/apps/current apps/studio/dist/apps/candidate apps/studio/dist/releases
+          if [ -d "apps/publish/current" ]; then cp -R apps/publish/current/* apps/studio/dist/apps/current/ || true; fi
+          if [ -d "apps/publish/candidate" ]; then cp -R apps/publish/candidate/* apps/studio/dist/apps/candidate/ || true; fi
+          if [ -d "apps/publish/releases" ]; then cp -R apps/publish/releases/* apps/studio/dist/releases/ || true; fi
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: 'apps/studio/dist' }
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

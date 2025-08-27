@@ -1,0 +1,5 @@
+name: site:inspire_rebuild@v1
+steps:
+  - { id: plan, action: echo, inputs: { text: "URL -> clean rebuild (no copying) -> QA -> Deploy" } }
+  - { id: scaffold, pre:[plan], action: generate_inspired_site, inputs: { url: "https://example.com", template_id: "landing_saas", dest: "./site" } }
+  - { id: report, pre:[scaffold], action: write_report, inputs: { out: "run_report.json" } }

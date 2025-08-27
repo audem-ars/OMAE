@@ -1,0 +1,5 @@
+name: research:report@v1
+steps:
+  - { id: plan, action: echo, inputs: { text: "Compile sources list & outline (offline)" } }
+  - { id: compile, pre:[plan], action: research_compile_stub, inputs: { topics: ["macro","ai","markets"], sources_file: "data/research_sources.txt", out_html: "research-report.html" } }
+  - { id: report, pre:[compile], action: write_report, inputs: { out: "run_report.json" } }

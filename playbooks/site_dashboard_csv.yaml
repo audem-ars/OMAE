@@ -1,0 +1,6 @@
+name: site:dashboard_csv@v1
+steps:
+  - { id: plan, action: echo, inputs: { text: "Template (dashboard_csv) + copy CSV -> QA -> Deploy" } }
+  - { id: scaffold, pre:[plan], action: scaffold_from_template, inputs: { template_id: "dashboard_csv", dest: "./site", vars: { title: "CSV Dashboard", tagline: "Chart your data", cta: "Explore" } } }
+  - { id: data, pre:[scaffold], action: copy_csv_to_site_public, inputs: { src_csv: "data/sample_dashboard.csv", dest: "./site" } }
+  - { id: report, pre:[data], action: write_report, inputs: { out: "run_report.json" } }

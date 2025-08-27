@@ -1,0 +1,5 @@
+name: market:monitor@v1
+steps:
+  - { id: plan, action: echo, inputs: { text: "Evaluate local quotes vs threshold" } }
+  - { id: eval, pre:[plan], action: market_monitor_eval_stub, inputs: { symbols: ["AAPL","MSFT","AMZN","SPY"], quotes_file: "data/quotes.json", pct_move_alert: 3.0, out_json: "monitor-alerts.json" } }
+  - { id: report, pre:[eval], action: write_report, inputs: { out: "run_report.json" } }

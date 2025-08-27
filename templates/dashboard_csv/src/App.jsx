@@ -1,0 +1,2 @@
+import React,{useEffect,useRef} from 'react'
+export default function App(){const c=useRef(null);useEffect(()=>{fetch('data.csv').then(r=>r.text()).then(t=>{const[H,...R]=t.trim().split(/\r?\n/);const C=H.split(',');const ix=C.indexOf('date'),iy=C.indexOf('value');const D=R.map(l=>{const s=l.split(',');return {x:s[ix],y:parseFloat(s[iy])}});new window.Chart(c.current.getContext('2d'),{type:'line',data:{datasets:[{label:'Value',data:D}]}})})},[]);return(<div><h1>{{TITLE}}</h1><canvas ref={c} width='800' height='360'></canvas></div>)}

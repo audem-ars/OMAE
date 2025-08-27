@@ -1,0 +1,4 @@
+name: docs:generate@v1
+steps:
+  - { id: plan, action: echo, inputs: { text: "Write markdown document" } }
+  - { id: doc, pre:[plan], action: write_report, inputs: { out: "run_report.json" } }

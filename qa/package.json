@@ -1,0 +1,16 @@
+{
+  "name": "omae-qa",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "devDependencies": {
+    "@playwright/test": "^1.46.1",
+    "@lhci/cli": "^0.12.0",
+    "http-server": "^14.1.1"
+  },
+  "scripts": {
+    "serve": "http-server ../site/dist -p 4173 -s",
+    "test": "playwright test",
+    "lhci": "lhci autorun --config=./lighthouserc.json --collect.url=http://localhost:4173"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "AAPL": {
+    "price": 195.1,
+    "prev_close": 189.3
+  },
+  "MSFT": {
+    "price": 420.3,
+    "prev_close": 418.0
+  },
+  "AMZN": {
+    "price": 176.2,
+    "prev_close": 171.5
+  },
+  "SPY": {
+    "price": 550.7,
+    "prev_close": 546.2
+  }
+}

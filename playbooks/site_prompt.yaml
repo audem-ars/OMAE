@@ -1,0 +1,5 @@
+name: site:prompt@v1
+steps:
+  - { id: plan, action: echo, inputs: { text: "Prompt -> Landing Page -> QA -> Deploy" } }
+  - { id: scaffold, pre:[plan], action: scaffold_site_from_prompt, inputs: { dest: "./site", prompt: "Your prompt here" } }
+  - { id: report, pre:[scaffold], action: write_report, inputs: { out: "run_report.json" } }

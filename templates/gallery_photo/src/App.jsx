@@ -1,0 +1,2 @@
+import React,{useState} from 'react'
+export default function App(){const[f,setF]=useState([]);return(<div><h1>{{TITLE}}</h1><input type='file' multiple accept='image/*' onChange={e=>setF([...e.target.files].slice(0,12))}/><div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(160px,1fr))',gap:10,marginTop:12}}>{f.map((x,i)=>(<img key={i} alt='' src={URL.createObjectURL(x)} style={{width:'100%',height:160,objectFit:'cover'}}/>))}</div></div>)}
