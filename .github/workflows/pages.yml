@@ -1,4 +1,4 @@
-name: Build & Publish Studio (+ artifacts) to GitHub Pages
+name: Build & Publish to GitHub Pages
 
 on:
   push:
@@ -21,40 +21,49 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'npm'
-          cache-dependency-path: |
-            apps/studio/package-lock.json
-            site/package-lock.json
-
-      - name: Build Studio (Vite)
-        working-directory: apps/studio
+      - name: Prepare _site (publish folders + root redirect)
         run: |
-          npm install
-          npm run build
+          rm -rf _site
+          mkdir -p _site/apps/publish
+          # Root redirect -> candidate (so you immediately see a page)
+          cat > _site/index.html <<'EOF'
+          <!doctype html>
+          <html lang="en">
+            <meta charset="utf-8" />
+            <meta http-equiv="refresh" content="0; url=/OMAE/apps/publish/candidate/" />
+            <title>Redirecting…</title>
+            <link rel="canonical" href="/OMAE/apps/publish/candidate/" />
+            <body>
+              <p>Redirecting to <a href="/OMAE/apps/publish/candidate/">Candidate</a>…</p>
+              <script>location.replace("/OMAE/apps/publish/candidate/");</script>
+            </body>
+          </html>
+          EOF
 
-      - name: Copy published apps into Pages artifact
-        run: |
-          DIST="apps/studio/dist"
-          mkdir -p "$DIST/apps/candidate" "$DIST/apps/current" "$DIST/releases"
-          [ -d apps/publish/candidate ] && rsync -a apps/publish/candidate/ "$DIST/apps/candidate/" || true
-          [ -d apps/publish/current ]   && rsync -a apps/publish/current/   "$DIST/apps/current/"   || true
-          [ -d apps/publish/releases ]  && rsync -a apps/publish/releases/  "$DIST/releases/"       || true
+          # Publish the hub page if present
+          if [ -f apps/publish/index.html ]; then
+            mkdir -p _site/apps/publish
+            cp -r apps/publish/index.html _site/apps/publish/
+          fi
 
-      - name: Upload Pages artifact
+          # Publish candidate/current/releases if present
+          if [ -d apps/publish ]; then
+            [ -d apps/publish/candidate ] && cp -r apps/publish/candidate _site/apps/publish/ || true
+            [ -d apps/publish/current ]   && cp -r apps/publish/current   _site/apps/publish/ || true
+            [ -d apps/publish/releases ]  && cp -r apps/publish/releases  _site/apps/publish/ || true
+          fi
+
+      - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: apps/studio/dist
+          path: _site
 
   deploy:
-    runs-on: ubuntu-latest
-    needs: build
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+    needs: build
+    runs-on: ubuntu-latest
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
