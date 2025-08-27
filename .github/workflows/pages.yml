@@ -1,4 +1,4 @@
-name: Build & Publish to GitHub Pages
+name: GitHub Pages
 
 on:
   push:
@@ -15,56 +15,20 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Prepare _site (publish folders + root redirect)
-        run: |
-          rm -rf _site
-          mkdir -p _site/apps/publish
-          # Root redirect -> candidate (so you immediately see a page)
-          cat > _site/index.html <<'EOF'
-          <!doctype html>
-          <html lang="en">
-            <meta charset="utf-8" />
-            <meta http-equiv="refresh" content="0; url=/OMAE/apps/publish/candidate/" />
-            <title>Redirecting…</title>
-            <link rel="canonical" href="/OMAE/apps/publish/candidate/" />
-            <body>
-              <p>Redirecting to <a href="/OMAE/apps/publish/candidate/">Candidate</a>…</p>
-              <script>location.replace("/OMAE/apps/publish/candidate/");</script>
-            </body>
-          </html>
-          EOF
-
-          # Publish the hub page if present
-          if [ -f apps/publish/index.html ]; then
-            mkdir -p _site/apps/publish
-            cp -r apps/publish/index.html _site/apps/publish/
-          fi
-
-          # Publish candidate/current/releases if present
-          if [ -d apps/publish ]; then
-            [ -d apps/publish/candidate ] && cp -r apps/publish/candidate _site/apps/publish/ || true
-            [ -d apps/publish/current ]   && cp -r apps/publish/current   _site/apps/publish/ || true
-            [ -d apps/publish/releases ]  && cp -r apps/publish/releases  _site/apps/publish/ || true
-          fi
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: _site
-
   deploy:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    needs: build
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+
+      # Publish the *whole repo* so /index.html AND /apps/publish/... exist
+      - name: Upload artifact (root of repo)
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
