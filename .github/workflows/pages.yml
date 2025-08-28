@@ -1,45 +1,44 @@
-name: Deploy to GitHub Pages
+name: Pages Build & Publish
 
 on:
-  push:
-    branches: [main]
-  workflow_dispatch:
+  workflow_dispatch: {}
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: true
+  contents: write
+  actions: write
+  workflows: write
 
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Insert <base> tags for Pages paths
-        run: |
-          set -euo pipefail
-          for f in apps/publish/candidate/index.html apps/publish/current/index.html; do
-            [ -f "$f" ] || continue
-            p="/OMAE/${f%index.html}"
-            if ! grep -qi '<base ' "$f"; then
-              awk -v base="$p" 'BEGIN{IGNORECASE=1} /<head[^>]*>/{print;print "  <base href=\"" base "\">";next} {print}' "$f" > "$f.tmp" && mv "$f.tmp" "$f"
-            fi
-          done
-
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+      - uses: actions/setup-node@v4
         with:
-          path: .
+          node-version: 20
 
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      # Build the template the Studio uses (landing_saas)
+      - name: Install & build landing
+        working-directory: templates/landing_saas
+        run: |
+          npm ci || npm i
+          npm run build
+
+      # Publish to apps/publish/candidate
+      - name: Publish candidate to repo
+        run: |
+          rm -rf apps/publish/candidate/*
+          mkdir -p apps/publish/candidate
+          cp -R templates/landing_saas/dist/. apps/publish/candidate/
+
+          # Inject correct <base> for GH Pages path
+          f=apps/publish/candidate/index.html
+          p="/OMAE/${f%index.html}"
+          awk -v base="$p" 'BEGIN{IGNORECASE=1} /<head[^>]*>/{print;print "  <base href=\"" base "\">";next} {print}' "$f" > "$f.tmp" && mv "$f.tmp" "$f"
+
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "publish(candidate): update from workflow" || echo "nothing to commit"
+          git push
