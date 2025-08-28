@@ -1,23 +1,137 @@
 <!doctype html>
 <html lang="en">
+<head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>OMAe – Deployments</title>
-  <style>
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; margin: 40px; }
-    h1 { margin-bottom: 0.25rem; }
-    p { color: #555; margin-top: 0; }
-    ul { line-height: 1.9; font-size: 1.05rem; }
-    code { background: #f4f4f4; padding: 2px 6px; border-radius: 6px; }
-    a { text-decoration: none; }
-    a:hover { text-decoration: underline; }
-  </style>
-  <h1>OMAe – Deployments</h1>
-  <p>Pick a build:</p>
-  <ul>
-    <li><a href="/OMAE/apps/publish/current/">Current (live)</a></li>
-    <li><a href="/OMAE/apps/publish/candidate/">Candidate (latest build)</a></li>
-    <li><a href="/OMAE/apps/publish/releases/">Releases</a></li>
-  </ul>
-  <p>Root redirect sends to <code>/OMAE/apps/publish/current/</code>.</p>
+  <title>Acme — Do more, faster.</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>html{scroll-behavior:smooth} body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}</style>
+  <base href="/OMAE/apps/publish/current/">
+</head>
+<body class="bg-[#0b0f19] text-white">
+  <!-- Nav -->
+  <header class="sticky top-0 z-50 bg-[#0b0f19]/70 backdrop-blur">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="h-8 w-8 rounded-lg bg-white/10 grid place-items-center">A</div>
+        <span class="font-extrabold tracking-tight">Acme</span>
+      </div>
+      <nav class="hidden md:flex items-center gap-6 text-white/80">
+        <a href="#features" class="hover:text-white">Features</a>
+        <a href="#pricing" class="hover:text-white">Pricing</a>
+        <a href="#faq" class="hover:text-white">FAQ</a>
+        <a href="https://example.com" class="px-4 py-2 rounded-xl bg-white text-black font-semibold">Get Started</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="relative overflow-hidden">
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(59,130,246,.3),transparent_60%)]"></div>
+    <div class="max-w-7xl mx-auto px-6 pt-20 pb-28 text-center relative">
+      <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight leading-tight">
+        Do more, faster.<br><span class="text-white/60">Ship like a team twice your size.</span>
+      </h1>
+      <p class="mt-6 text-white/70 max-w-2xl mx-auto">
+        Acme is the all-in-one platform to plan, build, and launch. Real-time collaboration, lightning-fast previews, and zero config deploys.
+      </p>
+      <div class="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
+        <a href="https://example.com" class="px-6 py-3 rounded-xl bg-white text-black font-semibold">Get Started</a>
+        <a href="#features" class="px-6 py-3 rounded-xl border border-white/20 hover:bg-white/5">See Features</a>
+      </div>
+      <div class="mt-16 rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
+        <img src="https://images.unsplash.com/photo-1551033406-611cf9a28f67?q=80&w=1600&auto=format&fit=crop" alt="" class="w-full">
+      </div>
+    </div>
+  </section>
+
+  <!-- Logos -->
+  <section class="py-10 border-t border-white/10">
+    <div class="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-6 gap-8 items-center opacity-70">
+      <div class="text-center text-sm">YouTube</div>
+      <div class="text-center text-sm">Stripe</div>
+      <div class="text-center text-sm">Figma</div>
+      <div class="text-center text-sm">Linear</div>
+      <div class="text-center text-sm">Vercel</div>
+      <div class="text-center text-sm">OpenAI</div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section id="features" class="py-24">
+    <div class="max-w-7xl mx-auto px-6">
+      <h2 class="text-3xl md:text-4xl font-extrabold">Everything you need to move fast</h2>
+      <div class="mt-12 grid md:grid-cols-3 gap-8">
+        <div class="p-6 rounded-2xl bg-white/5 border border-white/10">
+          <h3 class="font-bold">Realtime collaboration</h3>
+          <p class="mt-2 text-white/70">Edit together, comment in context, and never lose track.</p>
+        </div>
+        <div class="p-6 rounded-2xl bg-white/5 border border-white/10">
+          <h3 class="font-bold">Blazing previews</h3>
+          <p class="mt-2 text-white/70">Each commit gets its own live URL. Share instantly.</p>
+        </div>
+        <div class="p-6 rounded-2xl bg-white/5 border border-white/10">
+          <h3 class="font-bold">Zero-config deploys</h3>
+          <p class="mt-2 text-white/70">Connect your repo and ship to production automatically.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing -->
+  <section id="pricing" class="py-24 border-t border-white/10">
+    <div class="max-w-7xl mx-auto px-6">
+      <h2 class="text-3xl md:text-4xl font-extrabold">Simple, transparent pricing</h2>
+      <div class="mt-12 grid md:grid-cols-3 gap-6">
+        <div class="p-6 rounded-2xl bg-white/5 border border-white/10">
+          <div class="text-sm text-white/60 font-semibold">Starter</div>
+          <div class="mt-4 text-4xl font-extrabold">$0</div>
+          <ul class="mt-4 space-y-2 text-white/80">
+            <li>Unlimited previews</li><li>Community support</li><li>1 project</li>
+          </ul>
+          <a href="https://example.com" class="mt-6 inline-block px-4 py-2 rounded-xl bg-white text-black font-semibold">Get Started</a>
+        </div>
+        <div class="p-6 rounded-2xl bg-white text-black border border-white/10">
+          <div class="text-sm text-black/60 font-semibold">Pro</div>
+          <div class="mt-4 text-4xl font-extrabold">$29<span class="text-base">/mo</span></div>
+          <ul class="mt-4 space-y-2 text-black/80">
+            <li>Team collaboration</li><li>Custom domains</li><li>Unlimited projects</li>
+          </ul>
+          <a href="https://example.com" class="mt-6 inline-block px-4 py-2 rounded-xl bg-black text-white font-semibold">Start Pro</a>
+        </div>
+        <div class="p-6 rounded-2xl bg-white/5 border border-white/10">
+          <div class="text-sm text-white/60 font-semibold">Enterprise</div>
+          <div class="mt-4 text-4xl font-extrabold">Let’s talk</div>
+          <ul class="mt-4 space-y-2 text-white/80">
+            <li>SAML SSO</li><li>VPC & on-prem</li><li>Dedicated support</li>
+          </ul>
+          <a href="https://example.com" class="mt-6 inline-block px-4 py-2 rounded-xl border border-white/20">Contact Sales</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" class="py-24">
+    <div class="max-w-4xl mx-auto px-6">
+      <h2 class="text-3xl md:text-4xl font-extrabold text-center">FAQs</h2>
+      <div class="mt-10 grid md:grid-cols-2 gap-6 text-white/80">
+        <div><h3 class="font-semibold text-white">Can I deploy anywhere?</h3><p class="mt-2">Yes—GitHub Pages by default, any CDN with manual upload.</p></div>
+        <div><h3 class="font-semibold text-white">Do you have a free tier?</h3><p class="mt-2">Starter is free forever for individuals.</p></div>
+        <div><h3 class="font-semibold text-white">Is it fast?</h3><p class="mt-2">Built with Vite and edge caching—instant previews.</p></div>
+        <div><h3 class="font-semibold text-white">Do you support teams?</h3><p class="mt-2">Pro and Enterprise include roles, SSO, and audit logs.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="py-12 border-t border-white/10 text-center text-white/60">
+    <div class="max-w-7xl mx-auto px-6">
+      <p>&copy; <span id="y"></span> Acme. All rights reserved.</p>
+    </div>
+  </footer>
+  <script>document.getElementById('y').textContent=new Date().getFullYear()</script>
+</body>
 </html>
