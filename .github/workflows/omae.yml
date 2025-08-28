@@ -1,0 +1,76 @@
+name: OMAe Dispatch
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'site/**'
+      - 'templates/**'
+      - 'playbooks/**'
+      - 'executor/**'
+      - '.github/workflows/omae.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  run-omae:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install site deps
+        run: npm ci
+        working-directory: site
+
+      - name: Build site
+        run: npm run build
+        working-directory: site
+
+      - name: Prepare publish/candidate (copy built files only)
+        run: |
+          set -euo pipefail
+          rm -rf apps/publish/candidate
+          mkdir -p apps/publish/candidate
+          cp -R site/dist/* apps/publish/candidate/
+
+          # <base> for GitHub Pages under /OMAE/apps/publish/candidate/
+          f=apps/publish/candidate/index.html
+          p="/OMAE/apps/publish/candidate/"
+          if ! grep -qi '<base ' "$f"; then
+            awk -v base="$p" 'BEGIN{IGNORECASE=1} /<head[^>]*>/{print;print "  <base href=\"" base "\">";next} {print}' "$f" > "$f.tmp" && mv "$f.tmp" "$f"
+          fi
+
+          # ensure current exists first time
+          mkdir -p apps/publish/current
+          test -f apps/publish/current/index.html || cp -R apps/publish/candidate/* apps/publish/current/
+
+          # release report
+          mkdir -p apps/publish/releases
+          echo '{"status":"ok","timestamp":"'$(date -u +%FT%TZ)'","build":"candidate"}' > apps/publish/releases/last_run_report.json
+          cp apps/publish/releases/last_run_report.json run_report.json
+
+      - name: Commit publish artifacts only
+        run: |
+          set -euo pipefail
+          git config user.name "omae-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A apps/publish run_report.json
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git commit -m "OMAe run: site_template"
+          git push

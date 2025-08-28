@@ -1,4 +1,4 @@
-name: GitHub Pages
+name: Deploy to GitHub Pages
 
 on:
   push:
@@ -21,10 +21,21 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      # Publish the *whole repo* so /index.html AND /apps/publish/... exist
-      - name: Upload artifact (root of repo)
+      - name: Insert <base> tags for Pages paths
+        run: |
+          set -euo pipefail
+          for f in apps/publish/candidate/index.html apps/publish/current/index.html; do
+            [ -f "$f" ] || continue
+            p="/OMAE/${f%index.html}"
+            if ! grep -qi '<base ' "$f"; then
+              awk -v base="$p" 'BEGIN{IGNORECASE=1} /<head[^>]*>/{print;print "  <base href=\"" base "\">";next} {print}' "$f" > "$f.tmp" && mv "$f.tmp" "$f"
+            fi
+          done
+
+      - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: .
