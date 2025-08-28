@@ -1,94 +1,120 @@
-name: OMAe Dispatch
+name: OMAe Dispatch (FULL-FAT)
 
 on:
   workflow_dispatch:
   push:
+    branches: [ main ]
     paths:
-      - 'playbooks/**'
-      - 'executor/**'
-      - 'site/**'
-      - '.github/workflows/omae.yml'
+      - "executor/**"
+      - "playbooks/**"
+      - "site/**"
+      - ".github/workflows/omae.yml"
 
 permissions:
   contents: write
 
 concurrency:
-  group: omae-dispatch-main
+  group: omae-dispatch
   cancel-in-progress: true
 
 jobs:
   run-omae:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: true
 
-      - name: Setup Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
-      - name: Install Python deps
+      - name: Install runtime deps
         run: |
-          python -m pip install -U pip pyyaml
+          python -m pip install --upgrade pip
+          pip install pyyaml
 
-      - name: Run playbook
-        run: |
-          set -euo pipefail
-          PYTHONPATH=executor python -m omae.cli -p playbooks/site_template.yaml
-
-      - name: Build site (Vite)
-        working-directory: site
-        run: |
-          set -euo pipefail
-          npm ci || npm i
-          npm run build
-
-      - name: Publish candidate/current with base+404
-        run: |
-          set -euo pipefail
-          # candidate
-          rm -rf apps/publish/candidate/*
-          cp -R site/dist/. apps/publish/candidate/
-          f=apps/publish/candidate/index.html
-          awk 'BEGIN{IGNORECASE=1} /<head[^>]*>/{print;print "  <base href=\"/OMAE/apps/publish/candidate/\">";next} {print}' "$f" > "$f.tmp" && mv "$f.tmp" "$f"
-          cp "$f" apps/publish/candidate/404.html
-          # current
-          rm -rf apps/publish/current/*
-          cp -R apps/publish/candidate/. apps/publish/current/
-          fc=apps/publish/current/index.html
-          awk 'BEGIN{IGNORECASE=1} /<head[^>]*>/{print;print "  <base href=\"/OMAE/apps/publish/current/\">";next} {print}' "$fc" > "$fc.tmp" && mv "$fc.tmp" "$fc"
-          cp "$fc" apps/publish/current/404.html
-
-      - name: Commit & push (rebase-safe)
+      - name: Run OMAe playbook
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PYTHONPATH: executor
+        run: |
+          python -m omae.cli -p playbooks/site_template.yaml || {
+            echo "::error::OMAe playbook failed"
+            exit 1
+          }
+          echo '{ "ok": true, "report": "run_report.json" }'
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Build site
+        run: |
+          if [ -f "site/package.json" ]; then
+            cd site
+            npm ci || npm i
+            npm run build
+            cd ..
+          else
+            echo "No site/ to build"
+          fi
+
+      - name: Stage publish artifacts
+        run: |
+          set -euo pipefail
+          mkdir -p apps/publish/current apps/publish/candidate apps/publish/releases
+          if [ -d "site/dist" ]; then
+            rm -rf apps/publish/candidate/*
+            cp -R site/dist/. apps/publish/candidate/
+            # inject <base> for GH Pages path
+            f="apps/publish/candidate/index.html"
+            awk 'BEGIN{IGNORECASE=1} /<head[^>]*>/{print;print "  <base href=\"/OMAE/apps/publish/candidate/\">";next} {print}' "$f" > "$f.tmp" && mv "$f.tmp" "$f"
+            cp "$f" "apps/publish/candidate/404.html"
+            # promote to current
+            rm -rf apps/publish/current/*
+            cp -R apps/publish/candidate/. apps/publish/current/
+            fc="apps/publish/current/index.html"
+            awk 'BEGIN{IGNORECASE=1} /<head[^>]*>/{print;print "  <base href=\"/OMAE/apps/publish/current/\">";next} {print}' "$fc" > "$fc.tmp" && mv "$fc.tmp" "$fc"
+            cp "$fc" "apps/publish/current/404.html"
+          fi
+
+      - name: Commit & push published files (rebase-safe)
+        env:
+          BRANCH: ${{ github.ref_name }}
         run: |
           set -euo pipefail
           git config user.name  "omae-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
+          # Stage everything and commit only if there are changes
           git add -A
           if git diff --cached --quiet; then
             echo "No changes to commit."
             exit 0
           fi
+          git commit -m "OMAe run: site_template"
 
-          git commit -m "ci(publish): update candidate/current (bot)"
-
-          # Rebase on latest remote and retry push to avoid non-fast-forward failures
+          # Rebase on latest remote to avoid non-fast-forward rejects
           git fetch origin
-          git pull --rebase origin main || { git rebase --abort; echo "Rebase failed"; exit 1; }
+          if ! git pull --rebase origin "$BRANCH"; then
+            echo "Rebase conflict; retrying by reapplying generated files on latest main."
+            git rebase --abort || true
+            git stash push -u -m omae-generated || true
+            git reset --hard origin/"$BRANCH"
+            git stash pop || true
+            git add -A
+            git commit -m "OMAe run: site_template (rebased)"
+          fi
 
-          for i in 1 2 3; do
-            if git push origin HEAD:main; then
-              echo "Pushed on attempt $i"
-              break
-            fi
-            echo "Push race detected, retrying ($i)..."
+          # Push; if a second race happens, refetch/rebase once and retry
+          git push origin HEAD:"$BRANCH" || {
+            echo "First push rejected; refetching once and retrying..."
             git fetch origin
-            git pull --rebase origin main || git rebase --abort
-            sleep $((RANDOM%4+2))
-          done
+            git pull --rebase origin "$BRANCH" || true
+            git push origin HEAD:"$BRANCH"
+          }
