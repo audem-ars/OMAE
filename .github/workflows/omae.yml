@@ -3,17 +3,18 @@ name: OMAe Dispatch
 on:
   workflow_dispatch:
   push:
-    branches: [ main ]
     paths:
-      - 'site/**'
-      - 'templates/**'
-      - 'apps/studio/**'
       - 'playbooks/**'
       - 'executor/**'
+      - 'site/**'
       - '.github/workflows/omae.yml'
 
 permissions:
   contents: write
+
+concurrency:
+  group: omae-dispatch-main
+  cancel-in-progress: true
 
 jobs:
   run-omae:
@@ -22,66 +23,72 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          persist-credentials: true
+          fetch-depth: 0
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: Run OMAe (non-fatal for now)
+      - name: Install Python deps
+        run: |
+          python -m pip install -U pip pyyaml
+
+      - name: Run playbook
         run: |
           set -euo pipefail
-          PYTHONPATH=executor python -m omae.cli -p playbooks/site_template.yaml || true
+          PYTHONPATH=executor python -m omae.cli -p playbooks/site_template.yaml
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Build site
+      - name: Build site (Vite)
         working-directory: site
         run: |
+          set -euo pipefail
           npm ci || npm i
           npm run build
 
-      - name: Publish candidate/current (+base +404)
-        shell: bash
+      - name: Publish candidate/current with base+404
         run: |
           set -euo pipefail
-          rm -rf apps/publish/candidate/* apps/publish/current/*
-          mkdir -p apps/publish/candidate apps/publish/current
-
           # candidate
+          rm -rf apps/publish/candidate/*
           cp -R site/dist/. apps/publish/candidate/
           f=apps/publish/candidate/index.html
-          p="/OMAE/${f%index.html}"
-          awk -v base="$p" 'BEGIN{IGNORECASE=1} /<head[^>]*>/{print;print "  <base href=\"" base "\">";next} {print}' "$f" > "$f.tmp" && mv "$f.tmp" "$f"
+          awk 'BEGIN{IGNORECASE=1} /<head[^>]*>/{print;print "  <base href=\"/OMAE/apps/publish/candidate/\">";next} {print}' "$f" > "$f.tmp" && mv "$f.tmp" "$f"
           cp "$f" apps/publish/candidate/404.html
-
           # current
+          rm -rf apps/publish/current/*
           cp -R apps/publish/candidate/. apps/publish/current/
-          f=apps/publish/current/index.html
-          p="/OMAE/${f%index.html}"
-          awk -v base="$p" 'BEGIN{IGNORECASE=1} /<head[^>]*>/{print;print "  <base href=\"" base "\">";next} {print}' "$f" > "$f.tmp" && mv "$f.tmp" "$f"
-          cp "$f" apps/publish/current/404.html
+          fc=apps/publish/current/index.html
+          awk 'BEGIN{IGNORECASE=1} /<head[^>]*>/{print;print "  <base href=\"/OMAE/apps/publish/current/\">";next} {print}' "$fc" > "$fc.tmp" && mv "$fc.tmp" "$fc"
+          cp "$fc" apps/publish/current/404.html
 
-          # studio (if present)
-          if [ -f apps/studio/index.html ]; then
-            awk 'BEGIN{IGNORECASE=1} /<head[^>]*>/{print;print "  <base href=\"/OMAE/apps/studio/\">";next} {print}' apps/studio/index.html > apps/studio/index.html.tmp && mv apps/studio/index.html.tmp apps/studio/index.html || true
-            sed -E -i 's|src="/OMAE/assets/|src="assets/|g; s|href="/OMAE/assets/|href="assets/|g' apps/studio/index.html || true
-            cp apps/studio/index.html apps/studio/404.html || true
-          fi
-
-      - name: Commit & push published files
+      - name: Commit & push (rebase-safe)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          git config user.name  "github-actions[bot]"
+          git config user.name  "omae-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
           git add -A
           if git diff --cached --quiet; then
             echo "No changes to commit."
             exit 0
           fi
-          git commit -m "ci(publish): build site and update candidate/current with base+404"
-          git push
+
+          git commit -m "ci(publish): update candidate/current (bot)"
+
+          # Rebase on latest remote and retry push to avoid non-fast-forward failures
+          git fetch origin
+          git pull --rebase origin main || { git rebase --abort; echo "Rebase failed"; exit 1; }
+
+          for i in 1 2 3; do
+            if git push origin HEAD:main; then
+              echo "Pushed on attempt $i"
+              break
+            fi
+            echo "Push race detected, retrying ($i)..."
+            git fetch origin
+            git pull --rebase origin main || git rebase --abort
+            sleep $((RANDOM%4+2))
+          done
