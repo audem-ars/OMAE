@@ -49,30 +49,27 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          rm -rf apps/publish/candidate/* apps/publish/current/*
+          mkdir -p apps/publish/candidate apps/publish/current
 
           # candidate
-          rm -rf apps/publish/candidate/*
-          mkdir -p apps/publish/candidate
           cp -R site/dist/. apps/publish/candidate/
-
           f=apps/publish/candidate/index.html
           p="/OMAE/${f%index.html}"
           awk -v base="$p" 'BEGIN{IGNORECASE=1} /<head[^>]*>/{print;print "  <base href=\"" base "\">";next} {print}' "$f" > "$f.tmp" && mv "$f.tmp" "$f"
           cp "$f" apps/publish/candidate/404.html
 
           # current
-          rm -rf apps/publish/current/*
-          mkdir -p apps/publish/current
           cp -R apps/publish/candidate/. apps/publish/current/
-
           f=apps/publish/current/index.html
           p="/OMAE/${f%index.html}"
           awk -v base="$p" 'BEGIN{IGNORECASE=1} /<head[^>]*>/{print;print "  <base href=\"" base "\">";next} {print}' "$f" > "$f.tmp" && mv "$f.tmp" "$f"
           cp "$f" apps/publish/current/404.html
 
-          # studio (if built files are present)
+          # studio (if present)
           if [ -f apps/studio/index.html ]; then
             awk 'BEGIN{IGNORECASE=1} /<head[^>]*>/{print;print "  <base href=\"/OMAE/apps/studio/\">";next} {print}' apps/studio/index.html > apps/studio/index.html.tmp && mv apps/studio/index.html.tmp apps/studio/index.html || true
+            sed -E -i 's|src="/OMAE/assets/|src="assets/|g; s|href="/OMAE/assets/|href="assets/|g' apps/studio/index.html || true
             cp apps/studio/index.html apps/studio/404.html || true
           fi
 
@@ -86,5 +83,5 @@ jobs:
             echo "No changes to commit."
             exit 0
           fi
-          git commit -m "ci(publish): build site and update apps/publish (candidate+current) with base+404"
+          git commit -m "ci(publish): build site and update candidate/current with base+404"
           git push
