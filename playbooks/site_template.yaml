@@ -1,6 +1,1 @@
-name: site:template@v1
-steps:
-  - { id: plan, action: echo, inputs: { text: "Template -> Build -> QA -> Deploy" } }
-  - { id: scaffold, pre:[plan], action: scaffold_from_template, inputs: { template_id: "landing_saas", dest: "./site", vars: { title: "Acme", tagline: "Do more, faster.", cta: "Get Started" } } }
-  - { id: seo, pre:[scaffold], action: inject_seo_meta, inputs: { site_dir: "./site", title: "Acme", description: "Do more, faster." } }
-  - { id: report, pre:[seo], action: write_report, inputs: { out: "run_report.json" } }
+<PASTE THE YAML ABOVE>
