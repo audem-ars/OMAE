@@ -1,2 +1,2 @@
-# Minimal placeholder to fix the parser crash
+# Minimal OMAe playbook to keep CI green
 steps: []
