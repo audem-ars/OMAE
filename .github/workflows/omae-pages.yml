@@ -4,83 +4,100 @@ on:
   workflow_dispatch:
     inputs:
       pat:
-        description: 'Personal Access Token with contents/actions/workflows:write'
+        description: 'Personal Access Token with Contents RW + Actions RW + Workflows RW (or classic: repo + workflow)'
         required: true
         type: string
       promote:
-        description: 'Also copy candidate -> current'
-        required: false
-        default: "false"
-        type: choice
-        options: ["false","true"]
+        description: 'Copy candidate -> current after build?'
+        required: true
+        default: true
+        type: boolean
 
 permissions:
   contents: write
   actions: write
   workflows: write
 
+concurrency:
+  group: omae-pages
+  cancel-in-progress: true
+
 jobs:
-  build-and-publish:
+  build-deploy:
     runs-on: ubuntu-latest
     steps:
+      - name: Validate inputs
+        run: |
+          if [ -z "${{ inputs.pat }}" ]; then
+            echo "PAT is required (with Contents RW, Actions RW, Workflows RW)."
+            exit 1
+          fi
+
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: '20'
+          cache: 'npm'
 
-      # Build the same template Studio uses
-      - name: Build landing_saas
+      # -------- Build the landing template (what becomes Candidate) --------
+      - name: Install deps (landing template)
         working-directory: templates/landing_saas
         run: |
           npm ci || npm i
-          npm run build
 
-      - name: Publish to apps/publish/candidate
+      - name: Build (landing template)
+        working-directory: templates/landing_saas
+        run: npm run build
+
+      # -------- Publish to apps/publish/candidate --------
+      - name: Publish candidate
+        shell: bash
         run: |
           set -euo pipefail
-          rm -rf apps/publish/candidate/*
+          rm -rf apps/publish/candidate || true
           mkdir -p apps/publish/candidate
           cp -R templates/landing_saas/dist/. apps/publish/candidate/
 
-          # Inject correct <base> for GH Pages
-          f=apps/publish/candidate/index.html
+          # inject <base> and add SPA fallback
+          f="apps/publish/candidate/index.html"
           p="/OMAE/${f%index.html}"
           awk -v base="$p" 'BEGIN{IGNORECASE=1} /<head[^>]*>/{print;print "  <base href=\"" base "\">";next} {print}' "$f" > "$f.tmp" && mv "$f.tmp" "$f"
+          cp "$f" "apps/publish/candidate/404.html"
 
-          # Add SPA fallback
-          cp "$f" apps/publish/candidate/404.html
-
-      - name: Optionally promote candidate -> current
-        if: inputs.promote == 'true'
+      # -------- Optional: promote candidate -> current --------
+      - name: Promote to current
+        if: ${{ inputs.promote }}
+        shell: bash
         run: |
           set -euo pipefail
-          rm -rf apps/publish/current/*
+          rm -rf apps/publish/current || true
           mkdir -p apps/publish/current
           cp -R apps/publish/candidate/. apps/publish/current/
 
-          # Fix base for current
-          f=apps/publish/current/index.html
+          # inject <base> and add SPA fallback
+          f="apps/publish/current/index.html"
           p="/OMAE/${f%index.html}"
           awk -v base="$p" 'BEGIN{IGNORECASE=1} /<head[^>]*>/{print;print "  <base href=\"" base "\">";next} {print}' "$f" > "$f.tmp" && mv "$f.tmp" "$f"
-          cp "$f" apps/publish/current/404.html
+          cp "$f" "apps/publish/current/404.html"
 
-      - name: Commit & push using PAT (bypass branch protection)
+      # -------- Commit & push using provided PAT --------
+      - name: Commit & push
         env:
-          GH_PAT: ${{ inputs.pat }}
-          REPO: ${{ github.repository }}
-          BRANCH: ${{ github.ref_name }}
+          GH_REPO: ${{ github.repository }}
+          PAT: ${{ inputs.pat }}
+        shell: bash
         run: |
           set -euo pipefail
-          git config user.name  "omAe bot"
-          git config user.email "bot@users.noreply.github.com"
+          git config user.name  "omai-bot"
+          git config user.email "omai-bot@users.noreply.github.com"
           git add -A
-          git commit -m "publish: update candidate${{ inputs.promote == 'true' && ' and current' || '' }} via workflow" || echo "nothing to commit"
-
-          # Rebase on remote and push with PAT
-          git pull --rebase "https://x-access-token:${GH_PAT}@github.com/${REPO}.git" "${BRANCH}" || true
-          git push "https://x-access-token:${GH_PAT}@github.com/${REPO}.git" "HEAD:${BRANCH}"
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git commit -m "publish: rebuild candidate${{ inputs.promote && ' + promote current' || '' }}"
+          git remote set-url origin "https://x-access-token:${PAT}@github.com/${GH_REPO}.git"
+          git push origin HEAD:main
