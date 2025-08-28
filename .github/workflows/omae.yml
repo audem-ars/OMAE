@@ -3,10 +3,11 @@ name: OMAe Dispatch
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: [ main ]
     paths:
       - 'site/**'
       - 'templates/**'
+      - 'apps/studio/**'
       - 'playbooks/**'
       - 'executor/**'
       - '.github/workflows/omae.yml'
@@ -20,57 +21,70 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          persist-credentials: true
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: Install site deps
-        run: npm ci
-        working-directory: site
+      - name: Run OMAe (non-fatal for now)
+        run: |
+          set -euo pipefail
+          PYTHONPATH=executor python -m omae.cli -p playbooks/site_template.yaml || true
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
       - name: Build site
-        run: npm run build
         working-directory: site
+        run: |
+          npm ci || npm i
+          npm run build
 
-      - name: Prepare publish/candidate (copy built files only)
+      - name: Publish candidate/current (+base +404)
+        shell: bash
         run: |
           set -euo pipefail
-          rm -rf apps/publish/candidate
-          mkdir -p apps/publish/candidate
-          cp -R site/dist/* apps/publish/candidate/
 
-          # <base> for GitHub Pages under /OMAE/apps/publish/candidate/
+          # candidate
+          rm -rf apps/publish/candidate/*
+          mkdir -p apps/publish/candidate
+          cp -R site/dist/. apps/publish/candidate/
+
           f=apps/publish/candidate/index.html
-          p="/OMAE/apps/publish/candidate/"
-          if ! grep -qi '<base ' "$f"; then
-            awk -v base="$p" 'BEGIN{IGNORECASE=1} /<head[^>]*>/{print;print "  <base href=\"" base "\">";next} {print}' "$f" > "$f.tmp" && mv "$f.tmp" "$f"
+          p="/OMAE/${f%index.html}"
+          awk -v base="$p" 'BEGIN{IGNORECASE=1} /<head[^>]*>/{print;print "  <base href=\"" base "\">";next} {print}' "$f" > "$f.tmp" && mv "$f.tmp" "$f"
+          cp "$f" apps/publish/candidate/404.html
+
+          # current
+          rm -rf apps/publish/current/*
+          mkdir -p apps/publish/current
+          cp -R apps/publish/candidate/. apps/publish/current/
+
+          f=apps/publish/current/index.html
+          p="/OMAE/${f%index.html}"
+          awk -v base="$p" 'BEGIN{IGNORECASE=1} /<head[^>]*>/{print;print "  <base href=\"" base "\">";next} {print}' "$f" > "$f.tmp" && mv "$f.tmp" "$f"
+          cp "$f" apps/publish/current/404.html
+
+          # studio (if built files are present)
+          if [ -f apps/studio/index.html ]; then
+            awk 'BEGIN{IGNORECASE=1} /<head[^>]*>/{print;print "  <base href=\"/OMAE/apps/studio/\">";next} {print}' apps/studio/index.html > apps/studio/index.html.tmp && mv apps/studio/index.html.tmp apps/studio/index.html || true
+            cp apps/studio/index.html apps/studio/404.html || true
           fi
 
-          # ensure current exists first time
-          mkdir -p apps/publish/current
-          test -f apps/publish/current/index.html || cp -R apps/publish/candidate/* apps/publish/current/
-
-          # release report
-          mkdir -p apps/publish/releases
-          echo '{"status":"ok","timestamp":"'$(date -u +%FT%TZ)'","build":"candidate"}' > apps/publish/releases/last_run_report.json
-          cp apps/publish/releases/last_run_report.json run_report.json
-
-      - name: Commit publish artifacts only
+      - name: Commit & push published files
         run: |
           set -euo pipefail
-          git config user.name "omae-bot"
-          git config user.email "actions@users.noreply.github.com"
-          git add -A apps/publish run_report.json
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
           if git diff --cached --quiet; then
             echo "No changes to commit."
             exit 0
           fi
-          git commit -m "OMAe run: site_template"
+          git commit -m "ci(publish): build site and update apps/publish (candidate+current) with base+404"
           git push
