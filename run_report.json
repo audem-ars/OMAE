@@ -1,9 +1,1 @@
-{
-  "log": [
-    "ECHO: Template -> Build -> QA -> Deploy",
-    "scaffold_from_template: landing_saas -> ./site",
-    "SEO meta injected"
-  ],
-  "skipped_nodes": [],
-  "ts": 1756332886
-}
+{"status":"ok","timestamp":"2025-08-28T12:44:03Z","build":"candidate"}
