@@ -1,121 +1,100 @@
-// site/src/App.jsx
 import React from "react";
 
 export default function App() {
   return (
-    <main className="min-h-screen text-slate-900 bg-white">
-      <header className="mx-auto max-w-6xl px-6 py-10 flex items-center justify-between">
-        <a href="./" className="text-xl font-semibold tracking-tight">OMAE</a>
-        <nav className="flex gap-6 text-sm">
-          <a href="#features" className="hover:opacity-70">Features</a>
-          <a href="#pricing" className="hover:opacity-70">Pricing</a>
-          <a href="#faq" className="hover:opacity-70">FAQ</a>
+    <div style={{fontFamily:"Inter, system-ui, Avenir, Helvetica, Arial, sans-serif", lineHeight:1.4}}>
+      <header style={{padding:"16px 24px", display:"flex", justifyContent:"space-between", alignItems:"center"}}>
+        <div style={{fontWeight:700}}>OMAE</div>
+        <nav style={{display:"flex", gap:16}}>
+          <a href="#features">Features</a>
+          <a href="#pricing">Pricing</a>
+          <a href="#faq">FAQ</a>
+          <a href="#contact">Contact</a>
         </nav>
       </header>
 
-      <section className="mx-auto max-w-6xl px-6 grid md:grid-cols-2 gap-10 items-center py-8">
-        <div>
-          <h1 className="text-4xl md:text-5xl font-extrabold leading-tight">Do more, faster.</h1>
-          <p className="mt-4 text-lg text-slate-600">Ship like a team twice your size. Realtime collaboration, blazing previews, and zero-config deploys.</p>
-          <div className="mt-6 flex gap-3">
-            <a href="#pricing" className="inline-block rounded-md bg-black text-white px-5 py-3 text-sm font-medium">Get Started</a>
-            <a href="#features" className="inline-block rounded-md border border-slate-300 px-5 py-3 text-sm font-medium">See Features</a>
+      <main>
+        <section style={{padding:"64px 24px", textAlign:"center"}}>
+          <h1 style={{fontSize:40, margin:"0 0 12px"}}>Do more, faster.</h1>
+          <p style={{opacity:.8, margin:"0 0 24px"}}>Ship like a team twice your size.</p>
+          <div style={{display:"flex", gap:12, justifyContent:"center"}}>
+            <a href="#features" style={{padding:"12px 18px", borderRadius:8, background:"#111", color:"#fff", textDecoration:"none"}}>See Features</a>
+            <a href="#pricing" style={{padding:"12px 18px", borderRadius:8, border:"1px solid #ddd", textDecoration:"none"}}>Get Started</a>
           </div>
-          <div className="mt-8 flex items-center gap-4 text-xs text-slate-500">
-            <span>Works with</span>
-            <span>GitHub Pages</span>
-            <span>Vite</span>
-            <span>Playwright</span>
-          </div>
-        </div>
 
-        <div className="w-full">
-          <img
-            alt="Product"
-            className="w-full rounded-xl shadow-xl"
-            src="https://images.unsplash.com/photo-1556157382-97eda2d62296?q=80&w=1400&auto=format&fit=crop"
-          />
-        </div>
-      </section>
+          <div style={{marginTop:40, display:"flex", justifyContent:"center"}}>
+            <img
+              src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=1600&auto=format&fit=crop"
+              alt="Product preview"
+              style={{maxWidth:900, width:"100%", borderRadius:16, boxShadow:"0 10px 30px rgba(0,0,0,.12)"}}
+            />
+          </div>
+        </section>
 
-      <section id="features" className="bg-slate-50 border-y border-slate-100">
-        <div className="mx-auto max-w-6xl px-6 py-14 grid md:grid-cols-3 gap-8">
-          <div>
-            <h3 className="text-lg font-semibold">Realtime collaboration</h3>
-            <p className="mt-2 text-slate-600">Edit together, comment in context, and never lose track.</p>
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold">Blazing previews</h3>
-            <p className="mt-2 text-slate-600">Every commit gets a live URL you can share instantly.</p>
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold">Zero-config deploys</h3>
-            <p className="mt-2 text-slate-600">Connect your repo and ship to production automatically.</p>
-          </div>
-        </div>
-      </section>
+        <section id="features" style={{padding:"56px 24px", maxWidth:960, margin:"0 auto"}}>
+          <h2 style={{fontSize:28, marginBottom:12}}>Everything you need to move fast</h2>
+          <ul style={{display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))", gap:16, padding:0, listStyle:"none"}}>
+            <li style={{padding:16, border:"1px solid #eee", borderRadius:12}}>
+              <strong>Realtime collaboration</strong>
+              <p style={{marginTop:8, opacity:.8}}>Edit together, comment in context, never lose track.</p>
+            </li>
+            <li style={{padding:16, border:"1px solid #eee", borderRadius:12}}>
+              <strong>Blazing previews</strong>
+              <p style={{marginTop:8, opacity:.8}}>Each commit gets a live URL. Share instantly.</p>
+            </li>
+            <li style={{padding:16, border:"1px solid #eee", borderRadius:12}}>
+              <strong>Zero-config deploys</strong>
+              <p style={{marginTop:8, opacity:.8}}>Connect your repo and ship automatically.</p>
+            </li>
+          </ul>
+        </section>
 
-      <section id="pricing" className="mx-auto max-w-6xl px-6 py-16">
-        <h2 className="text-3xl font-bold text-center">Simple, transparent pricing</h2>
-        <div className="mt-10 grid md:grid-cols-3 gap-6">
-          <div className="rounded-2xl border border-slate-200 p-6">
-            <div className="text-sm font-semibold">Starter</div>
-            <div className="mt-2 text-3xl font-extrabold">$0</div>
-            <ul className="mt-4 text-sm text-slate-600 space-y-2">
-              <li>Unlimited previews</li>
-              <li>Community support</li>
-              <li>1 project</li>
-            </ul>
-            <a href="#faq" className="mt-6 inline-block rounded-md bg-black text-white px-4 py-2 text-sm">Get Started</a>
+        <section id="pricing" style={{padding:"56px 24px", maxWidth:960, margin:"0 auto"}}>
+          <h2 style={{fontSize:28, marginBottom:12}}>Simple, transparent pricing</h2>
+          <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))", gap:16}}>
+            <div style={{padding:16, border:"1px solid #eee", borderRadius:12}}>
+              <h3>Starter</h3>
+              <p style={{fontSize:24, margin:"8px 0"}}>$0</p>
+              <a href="#contact" style={{display:"inline-block", marginTop:8, padding:"10px 14px", borderRadius:8, border:"1px solid #ddd", textDecoration:"none"}}>Get Started</a>
+            </div>
+            <div style={{padding:16, border:"1px solid #eee", borderRadius:12}}>
+              <h3>Pro</h3>
+              <p style={{fontSize:24, margin:"8px 0"}}>$29/mo</p>
+              <a href="#contact" style={{display:"inline-block", marginTop:8, padding:"10px 14px", borderRadius:8, border:"1px solid #ddd", textDecoration:"none"}}>Start Pro</a>
+            </div>
+            <div style={{padding:16, border:"1px solid #eee", borderRadius:12}}>
+              <h3>Enterprise</h3>
+              <p style={{fontSize:24, margin:"8px 0"}}>Let’s talk</p>
+              <a href="#contact" style={{display:"inline-block", marginTop:8, padding:"10px 14px", borderRadius:8, border:"1px solid #ddd", textDecoration:"none"}}>Contact Sales</a>
+            </div>
           </div>
-          <div className="rounded-2xl border-2 border-black p-6">
-            <div className="text-sm font-semibold">Pro</div>
-            <div className="mt-2 text-3xl font-extrabold">$29/mo</div>
-            <ul className="mt-4 text-sm text-slate-600 space-y-2">
-              <li>Team collaboration</li>
-              <li>Custom domains</li>
-              <li>Unlimited projects</li>
-            </ul>
-            <a href="#faq" className="mt-6 inline-block rounded-md bg-black text-white px-4 py-2 text-sm">Start Pro</a>
-          </div>
-          <div className="rounded-2xl border border-slate-200 p-6">
-            <div className="text-sm font-semibold">Enterprise</div>
-            <div className="mt-2 text-3xl font-extrabold">Let’s talk</div>
-            <ul className="mt-4 text-sm text-slate-600 space-y-2">
-              <li>SAML SSO</li>
-              <li>VPC & on-prem</li>
-              <li>Dedicated support</li>
-            </ul>
-            <a href="#faq" className="mt-6 inline-block rounded-md bg-black text-white px-4 py-2 text-sm">Contact Sales</a>
-          </div>
-        </div>
-      </section>
+        </section>
 
-      <section id="faq" className="mx-auto max-w-6xl px-6 py-16">
-        <h2 className="text-3xl font-bold text-center">FAQs</h2>
-        <div className="mt-10 grid md:grid-cols-2 gap-8">
-          <div>
-            <div className="font-semibold">Can I deploy anywhere?</div>
-            <p className="text-slate-600">Yes — GitHub Pages by default, any CDN with manual upload.</p>
-          </div>
-          <div>
-            <div className="font-semibold">Do you have a free tier?</div>
-            <p className="text-slate-600">Starter is free forever for individuals.</p>
-          </div>
-          <div>
-            <div className="font-semibold">Is it fast?</div>
-            <p className="text-slate-600">Built with Vite and edge caching — instant previews.</p>
-          </div>
-          <div>
-            <div className="font-semibold">Do you support teams?</div>
-            <p className="text-slate-600">Pro and Enterprise include roles, SSO, and audit logs.</p>
-          </div>
-        </div>
-      </section>
+        <section id="faq" style={{padding:"56px 24px", maxWidth:960, margin:"0 auto"}}>
+          <h2 style={{fontSize:28, marginBottom:12}}>FAQs</h2>
+          <details style={{padding:16, border:"1px solid #eee", borderRadius:12, marginBottom:8}}>
+            <summary>Can I deploy anywhere?</summary>
+            <p style={{marginTop:8, opacity:.8}}>Yes — GitHub Pages by default, any CDN with manual upload.</p>
+          </details>
+          <details style={{padding:16, border:"1px solid #eee", borderRadius:12, marginBottom:8}}>
+            <summary>Do you have a free tier?</summary>
+            <p style={{marginTop:8, opacity:.8}}>Starter is free forever for individuals.</p>
+          </details>
+          <details style={{padding:16, border:"1px solid #eee", borderRadius:12}}>
+            <summary>Is it fast?</summary>
+            <p style={{marginTop:8, opacity:.8}}>Built with Vite and edge caching — instant previews.</p>
+          </details>
+        </section>
 
-      <footer className="mx-auto max-w-6xl px-6 py-10 text-sm text-slate-500">
-        <div>© {new Date().getFullYear()} OMAE</div>
+        <section id="contact" style={{padding:"56px 24px", textAlign:"center"}}>
+          <h2 style={{fontSize:28, marginBottom:12}}>Ready?</h2>
+          <a href="#pricing" style={{padding:"12px 18px", borderRadius:8, background:"#111", color:"#fff", textDecoration:"none"}}>Choose a plan</a>
+        </section>
+      </main>
+
+      <footer style={{padding:"32px 24px", textAlign:"center", opacity:.7}}>
+        © {new Date().getFullYear()} OMAE
       </footer>
-    </main>
+    </div>
   );
 }
