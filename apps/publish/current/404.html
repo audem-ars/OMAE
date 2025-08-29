@@ -1,4 +1,17 @@
 <!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width'><title>Acme</title><meta name="description" content="Do more, faster.">
-  <base href="/OMAE/apps/publish/current/"
+  <base href="/OMAE/apps/publish/current/">
   <script type="module" crossorigin src="./assets/index-DNwXGNes.js"></script>
+<script>(function(){
+  function toLocal(){ return "./get-started.html" }
+  addEventListener("click",function(e){
+    var a=e.target.closest("a[href]"); if(!a) return;
+    var url=new URL(a.getAttribute("href"), location.href);
+    var hit = /example\.com$/i.test(url.hostname) ||
+              /\/getting-started\/?$/i.test(url.pathname) ||
+              /\/get-started\/?$/i.test(url.pathname) ||
+              /\/signup\/?$/i.test(url.pathname) ||
+              /\/OMAE\/apps\/studio\//i.test(url.pathname);
+    if(hit){ e.preventDefault(); location.href = toLocal(); }
+  }, true);
+})();</script>
 </head><body><div id='root'></div></body></html>
