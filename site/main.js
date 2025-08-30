@@ -1,24 +1,17 @@
-document.addEventListener("click", (e) => {
-  const t = e.target?.closest?.("a,button,[role=button]");
-  if (!t) return;
-  const label = (
-    (t.getAttribute("href")||"") + " " +
-    (t.getAttribute("data-route")||"") + " " +
-    (t.textContent||"")
-  ).toLowerCase();
+import './styles.css';
 
-  const routes = {
-    "get started": "./get-started.html",
-    "features": "./features.html",
-    "pricing": "./pricing.html",
-    "docs": "./docs.html",
-    "documentation": "./docs.html",
-    "open app": "./app/index.html",
-    "launch": "./app/index.html",
-    "open the app": "./app/index.html"
-  };
-
-  for (const k in routes) {
-    if (label.includes(k)) { e.preventDefault(); location.href = routes[k]; return; }
-  }
-});
+function wireNav() {
+  document.addEventListener('click', (e) => {
+    const t = e.target.closest('a,button,[role=button]');
+    if (!t) return;
+    const label = ((t.getAttribute('href') || '') + ' ' + (t.textContent || '')).toLowerCase();
+    if (label.includes('get started')) {
+      if (t.hasAttribute('data-route')) e.preventDefault(), location.href = './get-started.html';
+    }
+    if (label.includes('open app')) { e.preventDefault(); location.href = './app/index.html'; }
+    if (t.dataset && t.dataset.route === 'features') { e.preventDefault(); location.href = './features.html'; }
+    if (t.dataset && t.dataset.route === 'pricing') { e.preventDefault(); location.href = './pricing.html'; }
+    if (t.dataset && t.dataset.route === 'docs') { e.preventDefault(); location.href = './docs.html'; }
+  }, true);
+}
+wireNav();
