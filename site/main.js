@@ -1,12 +1,11 @@
-// Minimal global script + label router
-document.addEventListener("click", function(e){
-  const t = e.target && (e.target.closest && e.target.closest("a,button,[role=button]"));
-  if(!t) return;
+document.addEventListener("click", (e) => {
+  const t = e.target?.closest?.("a,button,[role=button]");
+  if (!t) return;
   const label = (
-    (t.getAttribute("href") || "") + " " +
-    (t.getAttribute("data-route") || "") + " " +
-    (t.textContent || "")
-  ).toLowerCase().trim();
+    (t.getAttribute("href")||"") + " " +
+    (t.getAttribute("data-route")||"") + " " +
+    (t.textContent||"")
+  ).toLowerCase();
 
   const routes = {
     "get started": "./get-started.html",
@@ -22,4 +21,4 @@ document.addEventListener("click", function(e){
   for (const k in routes) {
     if (label.includes(k)) { e.preventDefault(); location.href = routes[k]; return; }
   }
-}, true);
+});
